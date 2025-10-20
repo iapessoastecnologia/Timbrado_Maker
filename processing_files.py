@@ -1,6 +1,6 @@
 from fastapi import FastAPI, UploadFile, File
 from fastapi.responses import FileResponse
-import os, re, shutil, tempfile
+import os, re, shutil, tempfile, copy  # <-- 1. IMPORTADO O 'copy'
 from reportlab.lib.pagesizes import A4
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
@@ -64,7 +64,7 @@ def gerar_pdf_timbrado(txt_path, timbrado_pdf):
         pagesize=A4,
         leftMargin=3 * cm,
         rightMargin=2 * cm,
-        topMargin=3 * cm,
+        topMargin=4 * cm,      # <-- (Ajuste) Mudei de 3cm para 4cm para consistência
         bottomMargin=2 * cm,
     )
 
@@ -110,17 +110,27 @@ def gerar_pdf_timbrado(txt_path, timbrado_pdf):
 
     doc.build(elementos)
 
-    # === MESCLA COM O TIMBRADO ===
+    # ==================================
+    # === MESCLA COM O TIMBRADO (CORRIGIDO) ===
+    # ==================================
     if not os.path.exists(timbrado_pdf):
         raise FileNotFoundError("Timbrado padrão não encontrado em /timbrado.")
 
-    timbrado = PdfReader(timbrado_pdf).pages[0]
+    # Abre os leitores (readers) fora do loop
+    timbrado_reader = PdfReader(timbrado_pdf)
+    timbrado_pagina_mestra = timbrado_reader.pages[0] # Página "mestra" do timbrado
     texto_pdf = PdfReader(temp_pdf)
+    
     writer = PdfWriter()
 
     for page in texto_pdf.pages:
-        fundo = timbrado
+        # <-- 2. CORRIGIDO: Cria uma CÓPIA LIMPA do timbrado a cada loop
+        fundo = copy.copy(timbrado_pagina_mestra)
+        
+        # Mescla o texto (page) POR CIMA da cópia limpa do timbrado (fundo)
         fundo.merge_page(page)
+        
+        # Adiciona a página mesclada ao 'writer'
         writer.add_page(fundo)
 
     with open(pdf_saida, "wb") as f_out:
