@@ -1,0 +1,16 @@
+# ============================================================
+# 📦 DEPENDÊNCIAS DA API TIMBRAR
+# ============================================================
+
+# Framework principal
+fastapi==0.115.0
+uvicorn[standard]==0.30.6
+
+# Manipulação e geração de PDFs
+reportlab==4.2.0
+PyPDF2==3.0.1
+
+# Utilitários diversos
+python-multipart==0.0.9   # Necessário para UploadFile no FastAPI
+pytz==2024.1              # Controle de timezone
+python-dotenv==1.0.1
